@@ -1,1 +1,1 @@
-# INF1316-GerenciaMemoria
+# Gerência de Memória para matéria de INF1316
