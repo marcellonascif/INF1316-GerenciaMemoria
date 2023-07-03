@@ -279,7 +279,7 @@ int terminou()
 int main(int argc, char **argv)
 {
     FILE *arq;
-    int i, info, j, k, tam, tp, swap, atual, todos_io, temp;
+    int i, info, j, tam, tp, swap, atual, todos_io, temp;
     int tempo, max;
     char c;
     char t[100], tipo[50];
@@ -388,7 +388,7 @@ int main(int argc, char **argv)
                             max = 10;
                         else
                             max = processos[i]->ex[processos[i]->atual][1];
-                        for (k = 0; k < max; k++)
+                        for (int k = 0; k < max; k++)
                         {
                             processos[i]->ex[processos[i]->atual][1]--;
                             print_memoria(relogio);
