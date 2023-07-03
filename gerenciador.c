@@ -237,11 +237,7 @@ int terminou()
 int main(int argc, char **argv)
 {
     FILE *arq;
-<<<<<<< Updated upstream
     int i, info, j, tam, tp, swap, atual, todos_io, temp;
-=======
-    int i, info, j, j, tam, tp, swap, atual, todos_io, temp;
->>>>>>> Stashed changes
     int tempo, max;
     char c;
     char t[100], tipo[50];
