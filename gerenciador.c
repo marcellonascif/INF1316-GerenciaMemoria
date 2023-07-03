@@ -11,9 +11,9 @@ int alocacao = 0;
 int ultima_alocacao = 0;
 int memoria[] = {8, 4, 2, 1, 1};
 int MemoriaAux[] = {0, 0, 0, 0, 0};
-int num;
+int qtdProc; /* Qtd de processos */ // É O QUE PARECE
 int alocados[MAX_PROC];
-int prontos_esperando[MAX_PROC];
+int prontos[MAX_PROC];
 int bloqueados[MAX_PROC];
 int finalizados[MAX_PROC];
 
@@ -53,41 +53,10 @@ int BestFit(Proc *p, int index)
     }
     else
     {
-        prontos_esperando[index] = 1;
+        prontos[index] = 1;
         p->particao = -1;
         return 0;
     }
-}
-
-int NextFit(Proc *p, int index)
-{
-    int i;
-
-    for (i = ultima_alocacao; i < TAM_MEMORIA; i++)
-    {
-        if (memoria[i] >= p->tam && MemoriaAux[i] == 0)
-        {
-            alocados[index] = 1;
-            MemoriaAux[i] = index + 1;
-            p->particao = i;
-            ultima_alocacao = i;
-            return 1;
-        }
-    }
-    for (i = 0; i < ultima_alocacao; i++)
-    {
-        if (memoria[i] >= p->tam && MemoriaAux[i] == 0)
-        {
-            alocados[index] = 1;
-            MemoriaAux[i] = index + 1;
-            p->particao = i;
-            ultima_alocacao = i;
-            return 1;
-        }
-    }
-    prontos_esperando[index] = 1;
-    p->particao = -1;
-    return 0;
 }
 
 int FirstFit(Proc *p, int index)
@@ -104,7 +73,7 @@ int FirstFit(Proc *p, int index)
             return 1;
         }
     }
-    prontos_esperando[index] = 1;
+    prontos[index] = 1;
     p->particao = -1;
     return 0;
 }
@@ -135,7 +104,7 @@ int WorstFit(Proc *p, int index)
     }
     else
     {
-        prontos_esperando[index] = 1;
+        prontos[index] = 1;
         p->particao = -1;
         return 0;
     }
@@ -144,7 +113,7 @@ int WorstFit(Proc *p, int index)
 void print_processos(Proc **p)
 {
     int i;
-    for (i = 0; i < num; i++)
+    for (i = 0; i < qtdProc; i++)
     {
         printf("Num: %d\n Tam: %d\n", p[i]->num, p[i]->tam);
     }
@@ -170,65 +139,54 @@ void print_memoria(int relogio)
 int swap_proc(Proc **p, int i)
 {
     int swap = 0;
-    int k, temp;
+    int j, temp;
 
     alocados[i] = 0;
     temp = MemoriaAux[p[i]->particao];
     MemoriaAux[p[i]->particao] = 0;
-    for (k = 0; k < num; k++)
+    for (j = 0; j < qtdProc; j++)
     {
-        if (k != i && prontos_esperando[k])
+        if (j != i && prontos[j])
         {
             if (alocacao == 0)
             {
-                if (FirstFit(p[k], k))
+                if (FirstFit(p[j], j)) // roda o first fit para o processo j
                 {
                     swap = 1;
                     p[i]->particao = -1;
-                    prontos_esperando[k] = 0;
+                    prontos[j] = 0;
                     printf("Processo %d retirado da memoria\n", i + 1);
-                    printf("Processo %d inserido na memoria\n", k + 1);
+                    printf("Processo %d inserido na memoria\n", j + 1);
                     return 1;
                 }
             }
-            if (alocacao == 1)
+            else if (alocacao == 1)
             {
-                if (NextFit(p[k], k))
+                if (BestFit(p[j], j)) // roda o best fit para o processo j
                 {
                     swap = 1;
                     p[i]->particao = -1;
-                    prontos_esperando[k] = 0;
+                    prontos[j] = 0;
                     printf("Processo %d retirado da memoria\n", i + 1);
-                    printf("Processo %d inserido na memoria\n", k + 1);
+                    printf("Processo %d inserido na memoria\n", j + 1);
                     return 1;
                 }
             }
             else if (alocacao == 2)
             {
-                if (BestFit(p[k], k))
+                if (WorstFit(p[j], j)) // roda o worst fit para o processo j
                 {
                     swap = 1;
                     p[i]->particao = -1;
-                    prontos_esperando[k] = 0;
+                    prontos[j] = 0;
                     printf("Processo %d retirado da memoria\n", i + 1);
-                    printf("Processo %d inserido na memoria\n", k + 1);
-                    return 1;
-                }
-            }
-            else if (alocacao == 3)
-            {
-                if (WorstFit(p[k], k))
-                {
-                    swap = 1;
-                    p[i]->particao = -1;
-                    prontos_esperando[k] = 0;
-                    printf("Processo %d retirado da memoria\n", i + 1);
-                    printf("Processo %d inserido na memoria\n", k + 1);
+                    printf("Processo %d inserido na memoria\n", j + 1);
                     return 1;
                 }
             }
         }
     }
+    
     if (swap == 0)
     {
         alocados[i] = 1;
@@ -242,7 +200,7 @@ int swap_proc(Proc **p, int i)
 void io(Proc **p)
 {
     int i;
-    for (i = 0; i < num; i++)
+    for (i = 0; i < qtdProc; i++)
     {
         if (bloqueados[i] != 0)
         {
@@ -253,13 +211,13 @@ void io(Proc **p)
                 if (p[i]->atual == p[i]->info)
                 {
                     finalizados[i] = 1;
-                    prontos_esperando[i] = 0;
+                    prontos[i] = 0;
                     printf("Processo %d finalizado\n", i + 1);
                     swap_proc(p, i);
                 }
                 else if (!alocados[i])
                 {
-                    prontos_esperando[i] = 1;
+                    prontos[i] = 1;
                 }
             }
         }
@@ -268,7 +226,7 @@ void io(Proc **p)
 int terminou()
 {
     int i;
-    for (i = 0; i < num; i++)
+    for (i = 0; i < qtdProc; i++)
     {
         if (!finalizados[i])
             return 0;
@@ -279,7 +237,11 @@ int terminou()
 int main(int argc, char **argv)
 {
     FILE *arq;
+<<<<<<< Updated upstream
     int i, info, j, tam, tp, swap, atual, todos_io, temp;
+=======
+    int i, info, j, j, tam, tp, swap, atual, todos_io, temp;
+>>>>>>> Stashed changes
     int tempo, max;
     char c;
     char t[100], tipo[50];
@@ -290,27 +252,27 @@ int main(int argc, char **argv)
     }
 
     arq = fopen(argv[1], "r");
-    if (arq == NULL)
-    {
-        printf("Erro ao abrir o arquivo de entrada\n");
-    }
+    if (arq == NULL) { printf("Erro ao abrir o arquivo de entrada\n"); exit(1);}
+
+    // Mudei para funcionar com esses 3 apenas (antes estava com o nextFit também)
     printf("***********************\nEscolha o tipo de alocacao de memoria: \n0 - First fit\n1 - Best fit\n2 - Worst fit\n***********************\n Escolha uma opção: ");
     scanf("%d", &alocacao);
+    
 
-    fscanf(arq, "%d", &num);
-    Proc *processos[num];
+    fscanf(arq, "%d", &qtdProc);
+    Proc *processos[qtdProc];
 
-    for (i = 0; i < num; i++)
+    for (i = 0; i < qtdProc; i++) // Inicializa os vetores com o tamanho recebido do arquivo
     {
         alocados[i] = 0;
         finalizados[i] = 0;
-        prontos_esperando[i] = 0;
+        prontos[i] = 0;
         bloqueados[i] = 0;
         MemoriaAux[i] = 0;
     }
 
     printf("PROCESSOS:\n");
-    for (i = 0; i < num; i++)
+    for (i = 0; i < qtdProc; i++)
     {
 
         fscanf(arq, "%s %s %s %s", t, t, t, t);
@@ -351,7 +313,7 @@ int main(int argc, char **argv)
         printf("\n");
     }
     sleep(1);
-    for (i = 0; i < num; i++)
+    for (i = 0; i < qtdProc; i++)
     {
         if (alocacao == 0)
             FirstFit(processos[i], i);
@@ -370,7 +332,7 @@ int main(int argc, char **argv)
         if (terminou())
             break;
         todos_io = 1;
-        for (i = 0; i < num; i++)
+        for (i = 0; i < qtdProc; i++)
         {
 
             if (alocados[i] && !bloqueados[i] && !finalizados[i])
@@ -388,7 +350,11 @@ int main(int argc, char **argv)
                             max = 10;
                         else
                             max = processos[i]->ex[processos[i]->atual][1];
+<<<<<<< Updated upstream
                         for (int k = 0; k < max; k++)
+=======
+                        for (j = 0; j < max; j++)
+>>>>>>> Stashed changes
                         {
                             processos[i]->ex[processos[i]->atual][1]--;
                             print_memoria(relogio);
@@ -405,7 +371,7 @@ int main(int argc, char **argv)
                         {
                             // if(swap_proc(processos,i))
                             // {
-                            // 	prontos_esperando[i] = 1;
+                            // 	prontos[i] = 1;
                             // }
                             break;
                         }
@@ -413,7 +379,7 @@ int main(int argc, char **argv)
                         if (processos[i]->atual >= processos[i]->info)
                         {
                             finalizados[i] = 1;
-                            prontos_esperando[i] = 0;
+                            prontos[i] = 0;
                             printf("Processo %d finalizado\n", i + 1);
                             swap_proc(processos, i);
                         }
@@ -432,7 +398,7 @@ int main(int argc, char **argv)
         }
         if (todos_io)
         {
-            for (j = 0; j < num; j++)
+            for (j = 0; j < qtdProc; j++)
             {
                 if (alocados[j])
                     swap_proc(processos, j);
