@@ -346,11 +346,7 @@ int main(int argc, char **argv)
                             max = 10;
                         else
                             max = processos[i]->ex[processos[i]->atual][1];
-<<<<<<< Updated upstream
                         for (int k = 0; k < max; k++)
-=======
-                        for (j = 0; j < max; j++)
->>>>>>> Stashed changes
                         {
                             processos[i]->ex[processos[i]->atual][1]--;
                             print_memoria(relogio);
