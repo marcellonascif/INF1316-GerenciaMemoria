@@ -17,17 +17,16 @@ int prontos[MAX_PROC];
 int bloqueados[MAX_PROC];
 int finalizados[MAX_PROC];
 
-struct processo
-{
-    int num;
-    int tam;
-    int info;
-    int atual;
-    int particao;
-    int ex[][2];
-} typedef Proc;
+typedef struct processo {
+    int num;      /* Numero do processo*/
+    int tam;      /* Tamanho do processo em KB */
+    int info;     /* Qtd de ações no processo */
+    int atual;    /* Ação atual do processo */
+    int particao; /* Partição em que o processo está */
+    int ex[][2];  /* Vetor guardando ações do processo e o timeslice para execução */
+} Processo;
 
-int BestFit(Proc *p, int index)
+int BestFit(Processo *p, int index)
 {
     int i;
     int melhor = -1;
@@ -59,7 +58,7 @@ int BestFit(Proc *p, int index)
     }
 }
 
-int FirstFit(Proc *p, int index)
+int FirstFit(Processo *p, int index)
 {
     int i;
 
@@ -78,7 +77,7 @@ int FirstFit(Proc *p, int index)
     return 0;
 }
 
-int WorstFit(Proc *p, int index)
+int WorstFit(Processo *p, int index)
 {
     int i;
     int pior = -1;
@@ -110,7 +109,7 @@ int WorstFit(Proc *p, int index)
     }
 }
 
-void print_processos(Proc **p)
+void print_processos(Processo **p)
 {
     int i;
     for (i = 0; i < qtdProc; i++)
@@ -122,7 +121,7 @@ void print_processos(Proc **p)
 void print_memoria(int relogio)
 {
     int i;
-    if (relogio % 10 == 0 || relogio == 0)
+    if (relogio % 4 == 0 || relogio == 0) // Mudei para resetar a cada 4 segundos (antes eram 10 segundos)
     {
         printf("\nMemoria: \n");
         for (i = 0; i < TAM_MEMORIA; i++)
@@ -136,7 +135,7 @@ void print_memoria(int relogio)
         printf("\n");
     }
 }
-int swap_proc(Proc **p, int i)
+int swap_proc(Processo **p, int i)
 {
     int swap = 0;
     int j, temp;
@@ -197,7 +196,7 @@ int swap_proc(Proc **p, int i)
     return 1;
 }
 
-void io(Proc **p)
+void io(Processo **p)
 {
     int i;
     for (i = 0; i < qtdProc; i++)
@@ -256,7 +255,7 @@ int main(int argc, char **argv)
     
 
     fscanf(arq, "%d", &qtdProc);
-    Proc *processos[qtdProc];
+    Processo *processos[qtdProc];
 
     for (i = 0; i < qtdProc; i++) // Inicializa os vetores com o tamanho recebido do arquivo
     {
@@ -272,33 +271,34 @@ int main(int argc, char **argv)
     {
 
         fscanf(arq, "%s %s %s %s", t, t, t, t);
+
         tam = atoi(&t[0]);
-        fscanf(arq, "%d", &info);
         printf("Processo #%d - %dKB\n", i + 1, tam);
-        Proc *p = (Proc *)malloc(sizeof(*p) + info * sizeof(*p->ex));
-        p->num = i + 1;
+
+        fscanf(arq, "%d", &info);
+        
+        Processo *p = (Processo *)malloc(sizeof(*p) + info * sizeof(*p->ex));
+
         if (tam < 2)
             tam = 1;
         else if (tam > 2 && tam <= 4)
             tam = 4;
         else if (tam > 4 && tam < 8)
             tam = 8;
-
+        
+        p->num = i + 1;
         p->tam = tam;
         p->info = info;
 
-        for (j = 0; j < info; j++)
-        {
+        for (j = 0; j < info; j++) {    /* For que lê as ações que devem ser executadas no processo */
             fscanf(arq, "%s %d", tipo, &tempo);
-            if (strcmp(tipo, "io"))
-            {
-                printf("Exec %d\n", tempo);
-                tp = EXEC;
-            }
-            else
-            {
+            if (strcmp(tipo, "io") == 0) {  /* Se for IO */
                 printf("IO %d\n", tempo);
                 tp = IO;
+            }
+            else {                          /* Se for EXEC */
+                printf("EXEC %d\n", tempo);
+                tp = EXEC;
             }
 
             p->ex[j][0] = tp;
@@ -325,8 +325,10 @@ int main(int argc, char **argv)
 
     while (1)
     {
-        if (terminou())
+        if (terminou()){ // Quebra o while caso todos os processos tenham terminado
             break;
+        }
+
         todos_io = 1;
         for (i = 0; i < qtdProc; i++)
         {
@@ -352,8 +354,9 @@ int main(int argc, char **argv)
                             print_memoria(relogio);
                             relogio++;
                             io(processos);
-                            if (relogio % 5 == 0)
+                            if (relogio % 5 == 0){
                                 sleep(1);
+                            }
                         }
                         if (processos[i]->ex[processos[i]->atual][1] == 0)
                         {
