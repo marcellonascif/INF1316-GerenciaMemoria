@@ -341,8 +341,6 @@ int main(int argc, char **argv)
 
     int relogio = 0;
 
-    // print_memoria(relogio);
-
     while (1)
     {
         if (terminou())
@@ -374,7 +372,7 @@ int main(int argc, char **argv)
                             processos[i]->ex[processos[i]->atual][1]--;
                             print_memoria(relogio);
                             relogio++;
-                            // printf('%d', relogio);
+
                             io(processos);
                             if (relogio % 4 == 0)
                             {
@@ -387,10 +385,6 @@ int main(int argc, char **argv)
                         }
                         else
                         {
-                            // if(swap_proc(processos,i))
-                            // {
-                            // 	prontos[i] = 1;
-                            // }
                             break;
                         }
 
