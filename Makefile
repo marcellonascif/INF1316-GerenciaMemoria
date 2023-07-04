@@ -1,6 +1,6 @@
 all:
 	clear
-	gcc -o gerenciador gerenciador.c 
+	gcc -Wall -o gerenciador gerenciador.c 
 	./gerenciador entrada.txt
 	
 teste:

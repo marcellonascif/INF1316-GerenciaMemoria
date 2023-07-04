@@ -9,16 +9,15 @@
 #define MAX_PROC 100
 
 int algoritmo = 0;
-int ultima_alocacao = 0;
-int memoria[] = {8, 4, 2, 2};
-int MemoriaAux[] = {0, 0, 0, 0, 0};
-int qtdProc; /* Qtd de processos */
+int memoria[] = {8, 4, 2, 2};       /* Partições da memória */
+int MemoriaAux[] = {0, 0, 0, 0};    /* Ocupações da memória */
+int qtdProc;            /* Qtd de processos */
 int alocados[MAX_PROC];
 int prontos[MAX_PROC];
 int bloqueados[MAX_PROC];
 int finalizados[MAX_PROC];
 
-typedef struct processo
+typedef struct process
 {
     int num;      /* Numero do processo*/
     int tam;      /* Tamanho do processo em KB */
@@ -26,22 +25,21 @@ typedef struct processo
     int atual;    /* Ação atual do processo */
     int particao; /* Partição em que o processo está */
     int ex[][2];  /* Vetor guardando ações do processo e o timeslice para execução */
-} Processo;
+} Process;
 
-int BestFit(Processo *p, int index)
+int BestFit(Process *p, int index)
 {
     int i;
-    int melhor = -1;
-    int menor_diferenca = 1000000;
+    int melhor = -1, menor = 999999999;
 
     for (i = 0; i < TAM_MEMORIA; i++)
     {
         if (memoria[i] >= p->tam && MemoriaAux[i] == 0)
         {
-            if (memoria[i] - p->tam < menor_diferenca)
+            if (memoria[i] - p->tam < menor)
             {
                 melhor = i;
-                menor_diferenca = memoria[i] - p->tam;
+                menor = memoria[i] - p->tam;
             }
         }
     }
@@ -60,7 +58,7 @@ int BestFit(Processo *p, int index)
     }
 }
 
-int FirstFit(Processo *p, int index)
+int FirstFit(Process *p, int index)
 {
     int i;
 
@@ -79,7 +77,7 @@ int FirstFit(Processo *p, int index)
     return 0;
 }
 
-int WorstFit(Processo *p, int index)
+int WorstFit(Process *p, int index)
 {
     int i;
     int pior = -1;
@@ -111,7 +109,7 @@ int WorstFit(Processo *p, int index)
     }
 }
 
-void print_processos(Processo **p)
+void print_processos(Process **p)
 {
     int i;
     for (i = 0; i < qtdProc; i++)
@@ -137,7 +135,7 @@ void print_memoria(int relogio)
         printf("\n");
     }
 }
-int swap_proc(Processo **p, int i)
+int swap_proc(Process **p, int i)
 {
     int swap = 0;
     int j, temp;
@@ -198,7 +196,7 @@ int swap_proc(Processo **p, int i)
     return 1;
 }
 
-void io(Processo **p)
+void io(Process **p)
 {
     int i;
     for (i = 0; i < qtdProc; i++)
@@ -238,10 +236,10 @@ int terminou()
 int main(int argc, char **argv)
 {
     FILE *arq;
-    int i, qtdAcoes, j, tam, num, tipo, swap, atual, todos_io, temp;
+    int i, j;
+    int qtdAcoes, tam, num, tipo, todos_io;
     int tempo, max;
-    char c;
-    char t[100], acao[5];
+    char acao[5];
 
     if (argc != 2)
     {
@@ -265,7 +263,7 @@ int main(int argc, char **argv)
     }
 
     fscanf(arq, "%d", &qtdProc);
-    Processo *processos[qtdProc];
+    Process *processos[qtdProc];
 
     for (i = 0; i < qtdProc; i++) // Inicializa os vetores com o tamanho recebido do arquivo
     {
@@ -299,7 +297,7 @@ int main(int argc, char **argv)
 
         fscanf(arq, "%d", &qtdAcoes);
 
-        Processo *p = (Processo *)malloc(sizeof(*p) + qtdAcoes * sizeof(*p->ex));
+        Process *p = (Process *)malloc(sizeof(*p) + qtdAcoes * sizeof(*p->ex));
         p->num = num;
         p->tam = tam;
         p->qtdAcoes = qtdAcoes;
@@ -330,8 +328,6 @@ int main(int argc, char **argv)
         processos[i] = p;
         printf("\n");
     }
-
-    // sleep(1);
 
     for (i = 0; i < qtdProc; i++)
     {
