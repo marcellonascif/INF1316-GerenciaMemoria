@@ -19,9 +19,9 @@ int bloqueados[MAX_PROC];
 int finalizados[MAX_PROC];
 
 typedef struct processo {
-	int num;      /* Numero do processo*/
+	int num;      /* Numero do processo */
 	int tam;      /* Tamanho do processo em KB */
-	int qtdAcoes;    /* Qtd de ações no processo */
+	int qtdAcoes; /* Qtd de ações no processo */
 	int atual;    /* Ação atual do processo */
 	int particao; /* Partição em que o processo está */
 	int ex[][2];  /* Vetor guardando ações do processo e o timeslice para execução */
