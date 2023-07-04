@@ -365,8 +365,8 @@ int main(int argc, char **argv)
                     {
                         printf("No CPU: processo %d em exec faltando %d u.t.\n", i + 1, processos[i]->ex[processos[i]->atual][1]);
 
-                        if (processos[i]->ex[processos[i]->atual][1] > 10)
-                            max = 10;
+                        if (processos[i]->ex[processos[i]->atual][1] > 4)
+                            max = 4;
                         else
                             max = processos[i]->ex[processos[i]->atual][1];
                         for (int k = 0; k < max; k++)
@@ -376,7 +376,7 @@ int main(int argc, char **argv)
                             relogio++;
                             // printf('%d', relogio);
                             io(processos);
-                            if (relogio % 5 == 0)
+                            if (relogio % 4 == 0)
                             {
                                 sleep(1);
                             }
