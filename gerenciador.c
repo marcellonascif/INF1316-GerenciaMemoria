@@ -6,7 +6,7 @@
 #define IO 0
 #define EXEC 1
 #define TAM_MEMORIA 4
-#define MAXPROCESSOS 100
+#define MAXPROCESSOS 50
 
 int alocados[MAXPROCESSOS];
 int prontos[MAXPROCESSOS];
@@ -30,8 +30,8 @@ typedef struct process
 } Process;
 
 /* Protótipos */
-int BestFit(Process *p, int n);
 int FirstFit(Process *p, int n);
+int BestFit(Process *p, int n);
 int WorstFit(Process *p, int n);
 void displayMemory(int relogio);
 int swapProcess(Process **p, int i);
